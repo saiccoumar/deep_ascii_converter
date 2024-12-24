@@ -75,7 +75,7 @@ def apply_autoencoder(img_array, dimensions):
     if not os.path.exists(model_path):
         raise FileNotFoundError(f"Model file not found at {model_path}")
     
-    model.load_state_dict(torch.load(model_path))
+    model.load_state_dict(torch.load(model_path, weights_only=True))
     model.eval()
     
     # Process tiles in batches
@@ -126,6 +126,7 @@ def apply_autoencoder(img_array, dimensions):
 
 def convert_edge_aiss(fi,save, binarize=False, factor=2.5, low_thresh=0, high_thresh=50, accelerated=True, ae = False ,ded=False):
     start_time = time.time()
+    ae_time = 0
     factor = factor * inc / 10 
     # 1: detect edges using Canny Edge Detection
     og_img = cv2.imread(fi)
@@ -147,6 +148,9 @@ def convert_edge_aiss(fi,save, binarize=False, factor=2.5, low_thresh=0, high_th
     else: 
         pil_img = ImageOps.invert(Image.fromarray(og_img).convert("L"))
     
+    if ae:
+        img_array_edges, ae_time = apply_autoencoder(img_array_edges, dimensions=10)
+        print(f"AE Conversion Time: {ae_time:.4f} seconds")
     # 2: Resize
     height, width = og_img.shape[:2]
     scale = width / (factor*500)
@@ -230,6 +234,7 @@ def convert_edge_aiss(fi,save, binarize=False, factor=2.5, low_thresh=0, high_th
             f.write(fin)
     end_time_2 = time.time()
     elapsed_time = end_time_2 - start_time
+    elapsed_time += ae_time
     image_processing_time = end_time_1 - start_time
     model_conversion_time = end_time_2 - end_time_1
     print(f"Elapsed Conversion Time: {elapsed_time:.4f} seconds")
@@ -239,6 +244,7 @@ def convert_edge_aiss(fi,save, binarize=False, factor=2.5, low_thresh=0, high_th
 
 def convert_edge_v3(fi,save, binarize=False, factor=2.5, low_thresh=0, high_thresh=50, accelerated=True, ae = False ,ded=False):
     start_time = time.time()
+    ae_time = 0
     # 1: detect edges using Canny Edge Detection
     og_img = cv2.imread(fi)
     if og_img is None:
@@ -321,6 +327,7 @@ def convert_edge_v3(fi,save, binarize=False, factor=2.5, low_thresh=0, high_thre
             f.write(fin)
     end_time_2 = time.time()
     elapsed_time = end_time_2 - start_time
+    elapsed_time += ae_time
     image_processing_time = end_time_1 - start_time
     model_conversion_time = end_time_2 - end_time_1
     print(f"Elapsed Conversion Time: {elapsed_time:.4f} seconds")
@@ -330,6 +337,7 @@ def convert_edge_v3(fi,save, binarize=False, factor=2.5, low_thresh=0, high_thre
 
 def convert_edge_v4(fi,save, binarize=False, factor=2.5, low_thresh=0, high_thresh=50, accelerated=True, ae = False,ded=False):
     start_time = time.time()
+    ae_time = 0
     factor = factor * 6.4
     # 1: detect edges using Canny Edge Detection
     og_img = cv2.imread(fi)
@@ -415,6 +423,7 @@ def convert_edge_v4(fi,save, binarize=False, factor=2.5, low_thresh=0, high_thre
             f.write(fin)
     end_time_2 = time.time()
     elapsed_time = end_time_2 - start_time
+    elapsed_time += ae_time
     image_processing_time = end_time_1 - start_time
     model_conversion_time = end_time_2 - end_time_1
     print(f"Elapsed Conversion Time: {elapsed_time:.4f} seconds")
@@ -423,6 +432,7 @@ def convert_edge_v4(fi,save, binarize=False, factor=2.5, low_thresh=0, high_thre
 
 def convert_edge_knn(fi, save, binarize=False, inc=10, factor=2.5, low_thresh=0, high_thresh=50, accelerated=True, hog_enable=True, ae=False, ded=False):
     start_time = time.time()
+    ae_time = 0
     factor = factor * inc / 10 
 
     # 0: Import KNN Model
@@ -528,6 +538,7 @@ def convert_edge_knn(fi, save, binarize=False, inc=10, factor=2.5, low_thresh=0,
             f.write(fin)
     end_time_2 = time.time()
     elapsed_time = end_time_2 - start_time
+    elapsed_time += ae_time
     image_processing_time = end_time_1 - start_time
     model_conversion_time = end_time_2 - end_time_1
     print(f"Elapsed Conversion Time: {elapsed_time:.4f} seconds")
@@ -536,6 +547,7 @@ def convert_edge_knn(fi, save, binarize=False, inc=10, factor=2.5, low_thresh=0,
 
 def convert_edge_svm(fi,save, binarize = False, inc = 10, factor=2.5, low_thresh=0, high_thresh=50, accelerated=True, hog_enable = True, ae = False,ded=False):
     start_time = time.time()
+    ae_time = 0
     factor = factor * inc / 10 
     # 0: Import SVM Model
     if hog_enable:
@@ -639,6 +651,7 @@ def convert_edge_svm(fi,save, binarize = False, inc = 10, factor=2.5, low_thresh
             f.write(fin)
     end_time_2 = time.time()
     elapsed_time = end_time_2 - start_time
+    elapsed_time += ae_time
     image_processing_time = end_time_1 - start_time
     model_conversion_time = end_time_2 - end_time_1
     print(f"Elapsed Conversion Time: {elapsed_time:.4f} seconds")
@@ -647,6 +660,7 @@ def convert_edge_svm(fi,save, binarize = False, inc = 10, factor=2.5, low_thresh
 
 def convert_edge_random_forest(fi,save, binarize=False, inc = 64,  factor=2.5, low_thresh=0, high_thresh=50, accelerated=True, hog_enable=True, ae = False,ded=False):
     start_time = time.time()
+    ae_time = 0
     factor = factor * inc / 10
     # 0: Import SVM Model
     if hog_enable:
@@ -750,6 +764,7 @@ def convert_edge_random_forest(fi,save, binarize=False, inc = 64,  factor=2.5, l
             f.write(fin)
     end_time_2 = time.time()
     elapsed_time = end_time_2 - start_time
+    elapsed_time += ae_time
     image_processing_time = end_time_1 - start_time
     model_conversion_time = end_time_2 - end_time_1
     print(f"Elapsed Conversion Time: {elapsed_time:.4f} seconds")
@@ -758,11 +773,12 @@ def convert_edge_random_forest(fi,save, binarize=False, inc = 64,  factor=2.5, l
 
 def convert_edge_nn(fi,save, binarize=False, inc = 64, factor=2.5, low_thresh=0, high_thresh=50, accelerated=True,  ae = False,ded=False):
     start_time = time.time()
+    ae_time = 0
     factor = factor * inc / 10
     device = "cuda"
     # 0: Import SVM Model
     model = NeuralNetwork(inc * inc, 1024, 256, 64, 96)
-    model.load_state_dict(torch.load(f'artifacts/nn_ascii_classifier_{inc}_x_{inc}.pth'))
+    model.load_state_dict(torch.load(f'artifacts/nn_ascii_classifier_{inc}_x_{inc}.pth', weights_only=True))
     model.to(device)
     model.eval()
 
@@ -837,7 +853,7 @@ def convert_edge_nn(fi,save, binarize=False, inc = 64, factor=2.5, low_thresh=0,
         #     fin = fin + chr(y_pred+32)
         # fin = fin + '\n'
     # print(np.array(tiles).shape)
-    
+    tiles = np.array(tiles)
     with torch.no_grad():
         outputs = model(torch.tensor(tiles).to(torch.float32).to(device))
         probabilities = F.softmax(outputs, dim=1)
@@ -859,6 +875,7 @@ def convert_edge_nn(fi,save, binarize=False, inc = 64, factor=2.5, low_thresh=0,
             f.write(fin)
     end_time_2 = time.time()
     elapsed_time = end_time_2 - start_time
+    elapsed_time += ae_time
     image_processing_time = end_time_1 - start_time
     model_conversion_time = end_time_2 - end_time_1
     print(f"Elapsed Conversion Time: {elapsed_time:.4f} Fseconds")
@@ -870,11 +887,12 @@ def convert_edge_nn(fi,save, binarize=False, inc = 64, factor=2.5, low_thresh=0,
 
 def convert_edge_cnn(fi,save,binarize=False, inc = 64,factor=2.5, low_thresh=0, high_thresh=50, accelerated=True, ae = False, ded=False):
     start_time = time.time()
+    ae_time = 0
     factor = factor * inc / 10
     # 0: Import Model
     device = "cuda"
     model = CNN(input_shape=(1, inc, inc), num_classes=96).to(device)
-    model.load_state_dict(torch.load(f'artifacts/cnn_ascii_classifier_{inc}_x_{inc}.pth'))
+    model.load_state_dict(torch.load(f'artifacts/cnn_ascii_classifier_{inc}_x_{inc}.pth', weights_only=True))
     model.eval()
     # 1: detect edges using Canny Edge Detection
     og_img = cv2.imread(fi)
@@ -962,6 +980,7 @@ def convert_edge_cnn(fi,save,binarize=False, inc = 64,factor=2.5, low_thresh=0, 
             f.write(fin)
     end_time_2 = time.time()
     elapsed_time = end_time_2 - start_time
+    elapsed_time += ae_time
     image_processing_time = end_time_1 - start_time
     model_conversion_time = end_time_2 - end_time_1
     print(f"Elapsed Conversion Time: {elapsed_time:.4f} seconds")
@@ -970,11 +989,12 @@ def convert_edge_cnn(fi,save,binarize=False, inc = 64,factor=2.5, low_thresh=0, 
 
 def convert_edge_resnet(fi,save, binarize=False,inc = 64, factor=2.5, low_thresh=0, high_thresh=50, accelerated=True,  ae = False, ded=False):
     start_time = time.time()
+    ae_time = 0
     factor = factor * inc / 10
     # 0: Import Model
     device = "cuda"
     resnet18_model = ResNet(block=BasicBlock, layers=[2, 2, 2, 2], num_classes=96, grayscale=True).to(device)
-    resnet18_model.load_state_dict(torch.load(f'artifacts/resnet18_ascii_classifier_{inc}_x_{inc}.pth'))
+    resnet18_model.load_state_dict(torch.load(f'artifacts/resnet18_ascii_classifier_{inc}_x_{inc}.pth', weights_only=True))
     resnet18_model.eval()
 
     # 1: detect edges using Canny Edge Detection
@@ -1064,6 +1084,7 @@ def convert_edge_resnet(fi,save, binarize=False,inc = 64, factor=2.5, low_thresh
             f.write(fin)
     end_time_2 = time.time()
     elapsed_time = end_time_2 - start_time
+    elapsed_time += ae_time
     image_processing_time = end_time_1 - start_time
     model_conversion_time = end_time_2 - end_time_1
     print(f"Elapsed Conversion Time: {elapsed_time:.4f} seconds")
@@ -1072,11 +1093,12 @@ def convert_edge_resnet(fi,save, binarize=False,inc = 64, factor=2.5, low_thresh
 
 def convert_edge_mobile(fi,save, binarize=False, inc = 64, factor=2.5, low_thresh=0, high_thresh=50, accelerated=True, ae = False, ded=False):
     start_time = time.time()
+    ae_time = 0
     factor = factor * inc / 10
     # 0: Import Model
     device = "cuda"
     model = MobileNetV2(num_classes=96, grayscale=True).to(device)
-    model.load_state_dict(torch.load(f'artifacts/mobilenetv2_ascii_classifier_{inc}_x_{inc}.pth'))
+    model.load_state_dict(torch.load(f'artifacts/mobilenetv2_ascii_classifier_{inc}_x_{inc}.pth', weights_only=True))
     model.eval()
 
     # 1: detect edges using Canny Edge Detection
@@ -1163,6 +1185,7 @@ def convert_edge_mobile(fi,save, binarize=False, inc = 64, factor=2.5, low_thres
             f.write(fin)
     end_time_2 = time.time()
     elapsed_time = end_time_2 - start_time
+    elapsed_time += ae_time
     image_processing_time = end_time_1 - start_time
     model_conversion_time = end_time_2 - end_time_1
     print(f"Elapsed Conversion Time: {elapsed_time:.4f} seconds")
@@ -1191,7 +1214,7 @@ if __name__ == "__main__":
     
     try:
         args = parser.parse_args()
-        print(vars(args))
+        # print(vars(args))
         fi = vars(args)['filename']
         algo = vars(args)['algorithm']
         factor = vars(args)['factor']
@@ -1239,6 +1262,6 @@ if __name__ == "__main__":
         print(e.message)
     print()
 
-print(rgb(255,255,255)+"Thank you for using the ascii_terminal!")
+    print(rgb(0,255,20)+"Thank you for using the ascii_terminal!")
 
 
