@@ -1,0 +1,38 @@
+Hello Kitty:
+https://sanrio.fandom.com/wiki/Hello_Kitty
+
+Kuromi:
+https://hellokitty.fandom.com/wiki/Kuromi
+
+My Melody:
+https://hero.fandom.com/wiki/My_Melody
+
+Car:
+https://unsplash.com/photos/white-volkswagen-beetle-coupe-scale-model-p0OlRAAYXLY
+
+Building:
+https://unsplash.com/photos/white-concrete-building-during-daytime-ACt8ycSzpdE
+
+Pistachio:
+https://unsplash.com/photos/pistachio-nut-fiquoT6JZKE
+
+Structure-based ASCII art:
+https://dl.acm.org/doi/abs/10.1145/1833349.1778789
+
+ASCII Art Generation Using the Local Exhaustive Search on the GPU
+https://ieeexplore.ieee.org/abstract/document/6726897
+https://www.researchgate.net/profile/Koji-Nakano-4/publication/262159666_ASCII_art_generation_using_the_local_exhaustive_search_on_the_GPU/links/53eaa7cd0cf2dc24b3ce6eec/ASCII-art-generation-using-the-local-exhaustive-search-on-the-GPU.pdf
+
+ASCII Art Synthesis from Natural Photographs
+https://ieeexplore.ieee.org/abstract/document/7491376
+
+An Autoencoder Based ASCII Art Generator
+https://dl.acm.org/doi/pdf/10.1145/3591569.3591587
+
+ASCII Art Synthesis with Convolutional Networks
+https://nips2017creativity.github.io/doc/ASCII_Art_Synthesis.pdf
+
+Tone based vs Structured Base art
+https://www.researchgate.net/figure/Example-of-structure-based-ASCII-art-a-and-tone-based-ASCII-art-b-Example-of_fig1_359968108
+
+
