@@ -242,103 +242,16 @@ def convert_edge_aiss(fi,save, binarize=False, factor=2.5, low_thresh=0, high_th
     print(f"Model Conversion Time: {model_conversion_time:.4f} seconds")
     
 
-def convert_edge_v3(fi,save, binarize=False, factor=2.5, low_thresh=0, high_thresh=50, accelerated=True, ae = False ,ded=False):
+def convert_edge_euclid(fi,save, inc=10, binarize=False, factor=2.5, low_thresh=0, high_thresh=50, accelerated=True, ae = False,ded=False):
     start_time = time.time()
     ae_time = 0
-    # 1: detect edges using Canny Edge Detection
-    og_img = cv2.imread(fi)
-    if og_img is None:
-        print("Image doesn't exist in path.")
-        return
-    if not ded:
-        if accelerated:
-            tensor = canny_edge_detection([og_img],low_threshold=low_thresh, high_threshold=high_thresh)[0]
-            tensor = tensor * 255.0
-            tensor = tensor.byte()
-            to_pil = ToPILImage()
-            pil_img = to_pil(tensor).convert("L")
-            # print(tensor)
-            # show(tensor)
-        else:
-            cv2_img = DetectEdges(fi, low_thresh, high_thresh)
-            pil_img = Image.fromarray(cv2_img).convert("L")
-    else: 
-        pil_img = ImageOps.invert(Image.fromarray(og_img).convert("L"))
+    edge_vec = None
+    if inc == 64:
+        factor = factor * 6.4
+        edge_vec = edge_vectors4
+    else:
+        edge_vec = edge_vectors3
 
-    # 2: Resize
-    height, width = og_img.shape[:2]
-    scale = width / (factor*500)
-    width, height = width / scale, height / (scale*2)
-    width, height = int(width), int(height)
-
-    final = pil_img
-    final = pil_img.resize((width,height))
-
-    
-    # 3: Convert to 0s and 1s for bnw
-    img_array_edges = np.array(final).astype(float) 
-    max_value = np.max(img_array_edges)  # Get the maximum value
-    if max_value > 1:  # Avoid re-normalizing if already normalized
-        img_array_edges /= max_value
-    # Converting greyscale to black and white using threshold. greyscale>=50 = 1 (black). greyscale < 50 = 0 (white)
-    if binarize:
-        f_vec = np.vectorize(f4)
-        img_array_edges = f_vec(img_array_edges)
-
-    if ae:
-        img_array_edges, ae_time = apply_autoencoder(img_array_edges, dimensions=10)
-        print(f"AE Conversion Time: {ae_time:.4f} seconds")
-
-   
-    fin = ""
-    end_time_1 = time.time()
-    # 4: Take 10x10 tiles and replace with ASCII character
-    inc = 10
-    for li in range(0,math.floor(len(img_array_edges) / inc) * inc,inc): #Floor function to use only even bounds. 
-    # Odd bounds have data loss on last col/row
-        for i in range(0,math.floor(len(img_array_edges[li]) / inc) * inc,inc):
-            # Subsetting the tile itself
-            subs = []
-            subs.append([xi[i:i+inc] for xi in img_array_edges[li:li+inc]])
-            subs = np.array(subs)
-            # checking the minimum distance between each character vector and tile vector
-            min = 0
-            min_dist = np.linalg.norm(edge_vectors3[0]-subs[0].flatten())
-            # if not (np.all(subs == 0)):
-            for j in range(0,len(edge_vectors3)):
-                new_mind_dist = np.linalg.norm(edge_vectors3[j]-subs[0].flatten())
-
-                if (new_mind_dist<min_dist):
-                    min = j
-                    min_dist = new_mind_dist
-            
-            
-            
-            fin = fin + chr(min+32)
-        fin = fin + '\n'
-    
-
-    
-    # 5: Output to terminal
-    print(fin)
-    # 6: Save to output file
-    if(save):
-        with open(save,'w') as f:
-            f.write(fin)
-    end_time_2 = time.time()
-    elapsed_time = end_time_2 - start_time
-    elapsed_time += ae_time
-    image_processing_time = end_time_1 - start_time
-    model_conversion_time = end_time_2 - end_time_1
-    print(f"Elapsed Conversion Time: {elapsed_time:.4f} seconds")
-    print(f"Image Processing Time: {image_processing_time:.4f} seconds")
-    print(f"Model Conversion Time: {model_conversion_time:.4f} seconds")
-
-
-def convert_edge_v4(fi,save, binarize=False, factor=2.5, low_thresh=0, high_thresh=50, accelerated=True, ae = False,ded=False):
-    start_time = time.time()
-    ae_time = 0
-    factor = factor * 6.4
     # 1: detect edges using Canny Edge Detection
     og_img = cv2.imread(fi)
     if og_img is None:
@@ -383,13 +296,13 @@ def convert_edge_v4(fi,save, binarize=False, factor=2.5, low_thresh=0, high_thre
     #     img_array_edges = f_vec(img_array_edges)
 
     if ae:
-        img_array_edges, ae_time = apply_autoencoder(img_array_edges, dimensions=64)
+        img_array_edges, ae_time = apply_autoencoder(img_array_edges, dimensions=inc)
         print(f"AE Conversion Time: {ae_time:.4f} seconds")
 
     fin = ""
     end_time_1 = time.time()
     # 4: Take 10x10 tiles and replace with ASCII character
-    inc = 64
+    
     for li in range(0,math.floor(len(img_array_edges) / inc) * inc,inc): #Floor function to use only even bounds. 
     #     Odd bounds have data loss on last col/row
         for i in range(0,math.floor(len(img_array_edges[li]) / inc) * inc,inc):
@@ -399,10 +312,10 @@ def convert_edge_v4(fi,save, binarize=False, factor=2.5, low_thresh=0, high_thre
             subs = np.array(subs)
             # checking the minimum distance between each character vector and tile vector
             min = 0
-            min_dist = np.linalg.norm(edge_vectors4[0]-subs[0].flatten())
+            min_dist = np.linalg.norm(edge_vec[0]-subs[0].flatten())
             # if not (np.all(subs == 0)):
-            for j in range(0,len(edge_vectors4)):
-                new_mind_dist = np.linalg.norm(edge_vectors4[j]-subs[0].flatten())
+            for j in range(0,len(edge_vec)):
+                new_mind_dist = np.linalg.norm(edge_vec[j]-subs[0].flatten())
 
                 if (new_mind_dist<min_dist):
                     min = j
@@ -430,249 +343,38 @@ def convert_edge_v4(fi,save, binarize=False, factor=2.5, low_thresh=0, high_thre
     print(f"Image Processing Time: {image_processing_time:.4f} seconds")
     print(f"Model Conversion Time: {model_conversion_time:.4f} seconds")
 
-def convert_edge_knn(fi, save, binarize=False, inc=10, factor=2.5, low_thresh=0, high_thresh=50, accelerated=True, hog_enable=True, ae=False, ded=False):
-    start_time = time.time()
-    ae_time = 0
-    factor = factor * inc / 10 
-
-    # 0: Import KNN Model
-    if hog_enable:
-        loaded_clf = joblib.load(f'artifacts/knn_model_hog_{inc}_x_{inc}.pkl')
-    else:
-        loaded_clf = joblib.load(f'artifacts/knn_model_{inc}_x_{inc}.pkl')
-
-    def extract_hog_features(image):
-        hog_features = []
-
-        features = hog(image, pixels_per_cell=(2, 2), cells_per_block=(1, 1), feature_vector=True)
-        hog_features.append(features)
-        return np.array(hog_features)
-    # 1: detect edges using Canny Edge Detection
-    og_img = cv2.imread(fi)
-    if og_img is None:
-        print("Image doesn't exist in path.")
-        return
-    
-    if not ded:
-        if accelerated:
-            tensor = canny_edge_detection([og_img],low_threshold=low_thresh, high_threshold=high_thresh)[0]
-            tensor = tensor * 255.0
-            tensor = tensor.byte()
-            to_pil = ToPILImage()
-            pil_img = to_pil(tensor).convert("L")
-            # print(tensor)
-            # show(tensor)
-        else:
-            cv2_img = DetectEdges(fi, low_thresh, high_thresh)
-            pil_img = Image.fromarray(cv2_img).convert("L")
-    else: 
-        pil_img = ImageOps.invert(Image.fromarray(og_img).convert("L"))
-    
-
-    # 2: Resize
-    height, width = og_img.shape[:2]
-    scale = width / (factor*500)
-    width, height = width / scale, height / (scale*2)
-    width, height = int(width), int(height)
-
-    final = pil_img
-    final = pil_img.resize((width,height))
-
-    
-    # 3: Convert to 0s and 1s for bnw
-    img_array_edges = np.array(final).astype(float) 
-    max_value = np.max(img_array_edges)  # Get the maximum value
-    if max_value > 1:  # Avoid re-normalizing if already normalized
-        img_array_edges /= max_value
-    # Converting greyscale to black and white using threshold. greyscale>=50 = 1 (black). greyscale < 50 = 0 (white)
-    if binarize:
-        f_vec = np.vectorize(f4)
-        img_array_edges = f_vec(img_array_edges)
-    if ae:
-        img_array_edges, ae_time = apply_autoencoder(img_array_edges, dimensions=inc)
-        print(f"AE Conversion Time: {ae_time:.4f} seconds")
-    
-   
-    fin = ""
-    end_time_1 = time.time()
-    # 4: Take 10x10 tiles and replace with ASCII character
-
-    
-    tiles = []
-    for li in range(0,math.floor(len(img_array_edges) / inc) * inc,inc): #Floor function to use only even bounds. 
-    # Odd bounds have data loss on last col/row
-        for i in range(0,math.floor(len(img_array_edges[li]) / inc) * inc,inc):
-            # Subsetting the tile itself
-            subs = []
-            subs.append([xi[i:i+inc] for xi in img_array_edges[li:li+inc]])
-            subs = np.array(subs)
-            # checking the minimum distance between each character vector and tile vector
-            # print(subs.shape)
-            
-        
-            if hog_enable:
-                subs_hog = extract_hog_features(subs[0])[0]
-                tiles.append(subs_hog)
-            else: 
-                tiles.append(subs.flatten().reshape(1,-1)[0])
-    
-                
-        #     fin = fin + chr(y_pred+32)
-        # fin = fin + '\n'
-    print(np.array(tiles).shape)
-    predictions = [int(elem) for elem in loaded_clf.predict(tiles)]
-    fin = ""
-    index = 0
-    for li in range(0, math.floor(len(img_array_edges) / inc) * inc, inc):
-        for i in range(0, math.floor(len(img_array_edges[li]) / inc) * inc, inc):
-            char = chr(predictions[index] + 32)
-            fin += char
-            index += 1
-        fin += '\n'
-    
-    # 5: Output to terminal
-    print(fin)
-    # 6: Save to output file
-    if(save):
-        with open(save,'w') as f:
-            f.write(fin)
-    end_time_2 = time.time()
-    elapsed_time = end_time_2 - start_time
-    elapsed_time += ae_time
-    image_processing_time = end_time_1 - start_time
-    model_conversion_time = end_time_2 - end_time_1
-    print(f"Elapsed Conversion Time: {elapsed_time:.4f} seconds")
-    print(f"Image Processing Time: {image_processing_time:.4f} seconds")
-    print(f"Model Conversion Time: {model_conversion_time:.4f} seconds")
-
-def convert_edge_svm(fi,save, binarize = False, inc = 10, factor=2.5, low_thresh=0, high_thresh=50, accelerated=True, hog_enable = True, ae = False,ded=False):
-    start_time = time.time()
-    ae_time = 0
-    factor = factor * inc / 10 
-    # 0: Import SVM Model
-    if hog_enable:
-        loaded_clf = joblib.load(f'artifacts/svm_model_hog_{inc}_x_{inc}.pkl')
-    else:
-        loaded_clf = joblib.load(f'artifacts/svm_model_{inc}_x_{inc}.pkl')
-    def extract_hog_features(image):
-        hog_features = []
-
-        features = hog(image, pixels_per_cell=(2, 2), cells_per_block=(1, 1), feature_vector=True)
-        hog_features.append(features)
-        return np.array(hog_features)
-    # 1: detect edges using Canny Edge Detection
-    og_img = cv2.imread(fi)
-    if og_img is None:
-        print("Image doesn't exist in path.")
-        return
-    
-    if not ded:
-        if accelerated:
-            tensor = canny_edge_detection([og_img],low_threshold=low_thresh, high_threshold=high_thresh)[0]
-            tensor = tensor * 255.0
-            tensor = tensor.byte()
-            to_pil = ToPILImage()
-            pil_img = to_pil(tensor).convert("L")
-            # print(tensor)
-            # show(tensor)
-        else:
-            cv2_img = DetectEdges(fi, low_thresh, high_thresh)
-            pil_img = Image.fromarray(cv2_img).convert("L")
-    else: 
-        pil_img = ImageOps.invert(Image.fromarray(og_img).convert("L"))
-    
-
-    # 2: Resize
-    height, width = og_img.shape[:2]
-    scale = width / (factor*500)
-    width, height = width / scale, height / (scale*2)
-    width, height = int(width), int(height)
-
-    final = pil_img
-    final = pil_img.resize((width,height))
-
-    
-    # 3: Convert to 0s and 1s for bnw
-    img_array_edges = np.array(final).astype(float) 
-    max_value = np.max(img_array_edges)  # Get the maximum value
-    if max_value > 1:  # Avoid re-normalizing if already normalized
-        img_array_edges /= max_value
-    # Converting greyscale to black and white using threshold. greyscale>=50 = 1 (black). greyscale < 50 = 0 (white)
-    if binarize:
-        f_vec = np.vectorize(f4)
-        img_array_edges = f_vec(img_array_edges)
-    if ae:
-        img_array_edges, ae_time = apply_autoencoder(img_array_edges, dimensions=inc)
-        print(f"AE Conversion Time: {ae_time:.4f} seconds")
-    
-   
-    fin = ""
-    end_time_1 = time.time()
-    # 4: Take 10x10 tiles and replace with ASCII character
-
-    
-    tiles = []
-    for li in range(0,math.floor(len(img_array_edges) / inc) * inc,inc): #Floor function to use only even bounds. 
-    # Odd bounds have data loss on last col/row
-        for i in range(0,math.floor(len(img_array_edges[li]) / inc) * inc,inc):
-            # Subsetting the tile itself
-            subs = []
-            subs.append([xi[i:i+inc] for xi in img_array_edges[li:li+inc]])
-            subs = np.array(subs)
-            # checking the minimum distance between each character vector and tile vector
-            # print(subs.shape)
-            
-        
-            if hog_enable:
-                subs_hog = extract_hog_features(subs[0])[0]
-                tiles.append(subs_hog)
-            else: 
-                tiles.append(subs.flatten().reshape(1,-1)[0])
-    
-                
-        #     fin = fin + chr(y_pred+32)
-        # fin = fin + '\n'
-    print(np.array(tiles).shape)
-    predictions = [int(elem) for elem in loaded_clf.predict(tiles)]
-    fin = ""
-    index = 0
-    for li in range(0, math.floor(len(img_array_edges) / inc) * inc, inc):
-        for i in range(0, math.floor(len(img_array_edges[li]) / inc) * inc, inc):
-            char = chr(predictions[index] + 32)
-            fin += char
-            index += 1
-        fin += '\n'
-    
-    # 5: Output to terminal
-    print(fin)
-    # 6: Save to output file
-    if(save):
-        with open(save,'w') as f:
-            f.write(fin)
-    end_time_2 = time.time()
-    elapsed_time = end_time_2 - start_time
-    elapsed_time += ae_time
-    image_processing_time = end_time_1 - start_time
-    model_conversion_time = end_time_2 - end_time_1
-    print(f"Elapsed Conversion Time: {elapsed_time:.4f} seconds")
-    print(f"Image Processing Time: {image_processing_time:.4f} seconds")
-    print(f"Model Conversion Time: {model_conversion_time:.4f} seconds")
-
-def convert_edge_random_forest(fi,save, binarize=False, inc = 64,  factor=2.5, low_thresh=0, high_thresh=50, accelerated=True, hog_enable=True, ae = False,ded=False):
+def convert_edge_classical(fi,save, algo, binarize=False, inc = 64,  factor=2.5, low_thresh=0, high_thresh=50, accelerated=True, hog_enable=True, ae = False,ded=False):
     start_time = time.time()
     ae_time = 0
     factor = factor * inc / 10
+    loaded_clf = None
     # 0: Import SVM Model
     if hog_enable:
-        loaded_clf = joblib.load(f'artifacts/random_forest_model_hog_{inc}_x_{inc}.pkl')
+        if algo == 'rforest':
+            loaded_clf = joblib.load(f'artifacts/random_forest_model_hog_{inc}_x_{inc}.pkl')
+        elif algo == 'svm':
+            loaded_clf = joblib.load(f'artifacts/svm_model_hog_{inc}_x_{inc}.pkl')
+        elif algo == 'knn':
+            loaded_clf = joblib.load(f'artifacts/knn_model_hog_{inc}_x_{inc}.pkl')
+        else:
+            raise ValueError("model not found")
     else:
-        loaded_clf = joblib.load(f'artifacts/random_forest_model_{inc}_x_{inc}.pkl')
+        if algo == 'rforest':
+            loaded_clf = joblib.load(f'artifacts/random_forest_model_{inc}_x_{inc}.pkl')
+        elif algo == 'svm':
+            loaded_clf = joblib.load(f'artifacts/svm_model_{inc}_x_{inc}.pkl')
+        elif algo == 'knn':
+            loaded_clf = joblib.load(f'artifacts/knn_model_{inc}_x_{inc}.pkl')
+        else:
+            raise ValueError("model not found")
+
     def extract_hog_features(image):
         hog_features = []
 
         features = hog(image, pixels_per_cell=(2, 2), cells_per_block=(1, 1), feature_vector=True)
         hog_features.append(features)
         return np.array(hog_features)
+    
     # 1: detect edges using Canny Edge Detection
     og_img = cv2.imread(fi)
     if og_img is None:
@@ -770,6 +472,7 @@ def convert_edge_random_forest(fi,save, binarize=False, inc = 64,  factor=2.5, l
     print(f"Elapsed Conversion Time: {elapsed_time:.4f} seconds")
     print(f"Image Processing Time: {image_processing_time:.4f} seconds")
     print(f"Model Conversion Time: {model_conversion_time:.4f} seconds")
+  
 
 def convert_edge_nn(fi,save, binarize=False, inc = 64, factor=2.5, low_thresh=0, high_thresh=50, accelerated=True,  ae = False,ded=False):
     start_time = time.time()
@@ -881,8 +584,6 @@ def convert_edge_nn(fi,save, binarize=False, inc = 64, factor=2.5, low_thresh=0,
     print(f"Elapsed Conversion Time: {elapsed_time:.4f} Fseconds")
     print(f"Image Processing Time: {image_processing_time:.4f} seconds")
     print(f"Model Conversion Time: {model_conversion_time:.4f} seconds")
-
-
 
 
 def convert_edge_cnn(fi,save,binarize=False, inc = 64,factor=2.5, low_thresh=0, high_thresh=50, accelerated=True, ae = False, ded=False):
@@ -1191,7 +892,7 @@ def convert_edge_mobile(fi,save, binarize=False, inc = 64, factor=2.5, low_thres
     print(f"Elapsed Conversion Time: {elapsed_time:.4f} seconds")
     print(f"Image Processing Time: {image_processing_time:.4f} seconds")
     print(f"Model Conversion Time: {model_conversion_time:.4f} seconds")
-    
+
 
 if __name__ == "__main__":
     # Argument Parser to take in command line arguments
@@ -1237,16 +938,10 @@ if __name__ == "__main__":
             convert_edge_cv2(fi,save,factor)
         elif(vars(args)['algorithm']=='aiss'):
             convert_edge_aiss(fi,save, bin, factor, low_thresh, high_thresh, accelerated, ae, ded)
-        elif(vars(args)['algorithm']=='edgev3'):
-            convert_edge_v3(fi,save, bin, factor, low_thresh, high_thresh, accelerated, ae, ded)
-        elif(vars(args)['algorithm']=='edgev4'):
-            convert_edge_v4(fi,save, bin,factor, low_thresh, high_thresh, accelerated, ae, ded)
-        elif(vars(args)['algorithm']=='knn'):
-            convert_edge_knn(fi,save,bin, inc= inc, factor=factor, low_thresh=low_thresh, high_thresh=high_thresh, accelerated=accelerated, ae=ae, ded=ded)
-        elif(vars(args)['algorithm']=='svm'):
-            convert_edge_svm(fi,save,bin, inc= inc, factor=factor, low_thresh=low_thresh, high_thresh=high_thresh, accelerated=accelerated, hog_enable = disable_hog, ae=ae, ded=ded)
-        elif(vars(args)['algorithm']=='rforest'):
-            convert_edge_random_forest(fi,save,bin,  inc= inc, factor=factor, low_thresh=low_thresh, high_thresh=high_thresh, accelerated=accelerated, hog_enable = disable_hog, ae=ae, ded=ded)
+        elif((vars(args)['algorithm']=='edgev3') or (vars(args)['algorithm']=='edgev4')):
+            convert_edge_euclid(fi,save, inc=inc, binarize=bin, factor=factor, low_thresh=low_thresh, high_thresh=high_thresh, accelerated=accelerated, ae=ae, ded=ded)
+        elif((vars(args)['algorithm']=='knn') or (vars(args)['algorithm']=='svm') or (vars(args)['algorithm']=='rforest')):
+            convert_edge_classical(fi,save, algo=(vars(args)['algorithm']),binarize=bin, inc= inc, factor=factor, low_thresh=low_thresh, high_thresh=high_thresh, accelerated=accelerated, ae=ae, ded=ded)
         elif(vars(args)['algorithm']=='nn'):
             convert_edge_nn(fi,save, bin, inc= inc ,factor=factor, low_thresh=low_thresh, high_thresh=high_thresh, accelerated=accelerated, ae=ae,ded=ded)
         elif(vars(args)['algorithm']=='cnn'):
