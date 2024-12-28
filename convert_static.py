@@ -13,7 +13,7 @@ from sklearn import svm
 import joblib
 from scipy.spatial.distance import cosine
 
-
+threshold = 1e-1
 
 def apply_autoencoder(img_array, dimensions):
     """
@@ -64,6 +64,7 @@ def apply_autoencoder(img_array, dimensions):
     # Convert tiles to tensor
     tiles_tensor = torch.from_numpy(tiles).float().unsqueeze(1)  # Add channel dimension
     
+
     # Initialize appropriate autoencoder
     if dimensions == 10:
         model = Autoencoder10()
@@ -148,9 +149,7 @@ def convert_edge_aiss(fi,save, binarize=False, factor=2.5, low_thresh=0, high_th
     else: 
         pil_img = ImageOps.invert(Image.fromarray(og_img).convert("L"))
     
-    if ae:
-        img_array_edges, ae_time = apply_autoencoder(img_array_edges, dimensions=10)
-        print(f"AE Conversion Time: {ae_time:.4f} seconds")
+    
     # 2: Resize
     height, width = og_img.shape[:2]
     scale = width / (factor*500)
@@ -160,6 +159,12 @@ def convert_edge_aiss(fi,save, binarize=False, factor=2.5, low_thresh=0, high_th
     final = pil_img
     final = pil_img.resize((width,height))
     img_array_edges = np.array(final).astype(float)
+    if ae:
+        img_array_edges, ae_time = apply_autoencoder(img_array_edges, dimensions=10)
+        print(f"AE Conversion Time: {ae_time:.4f} seconds")
+        # Filtering
+        img_array_edges[img_array_edges <= threshold] = 0
+
     def log_polar_histogram(center, image, bins_r=5, bins_theta=12):
         """Create log-polar histogram for a given center point"""
         h, w = image.shape
@@ -298,6 +303,7 @@ def convert_edge_euclid(fi,save, inc=10, binarize=False, factor=2.5, low_thresh=
     if ae:
         img_array_edges, ae_time = apply_autoencoder(img_array_edges, dimensions=inc)
         print(f"AE Conversion Time: {ae_time:.4f} seconds")
+        img_array_edges[img_array_edges <= threshold] = 0
 
     fin = ""
     end_time_1 = time.time()
@@ -419,7 +425,12 @@ def convert_edge_classical(fi,save, algo, binarize=False, inc = 64,  factor=2.5,
     if ae:
         img_array_edges, ae_time = apply_autoencoder(img_array_edges, dimensions=inc)
         print(f"AE Conversion Time: {ae_time:.4f} seconds")
+        # Filtering
+        img_array_edges[img_array_edges <= threshold] = 0
     
+    # plt.imshow(img_array_edges)
+    # plt.axis('off')  # Hide axes for a cleaner display
+    # plt.show()
 
     fin = ""
     end_time_1 = time.time()
@@ -434,9 +445,7 @@ def convert_edge_classical(fi,save, algo, binarize=False, inc = 64,  factor=2.5,
             subs = []
             subs.append([xi[i:i+inc] for xi in img_array_edges[li:li+inc]])
             subs = np.array(subs)
-            # checking the minimum distance between each character vector and tile vector
-            # print(subs.shape)
-            
+           
         
             if hog_enable:
                 subs_hog = extract_hog_features(subs[0])[0]
@@ -444,9 +453,7 @@ def convert_edge_classical(fi,save, algo, binarize=False, inc = 64,  factor=2.5,
             else: 
                 tiles.append(subs.flatten().reshape(1,-1)[0])
     
-                
-        #     fin = fin + chr(y_pred+32)
-        # fin = fin + '\n'
+
     print(np.array(tiles).shape)
     predictions = [int(elem) for elem in loaded_clf.predict(tiles)]
     fin = ""
@@ -530,6 +537,8 @@ def convert_edge_nn(fi,save, binarize=False, inc = 64, factor=2.5, low_thresh=0,
     if ae:
         img_array_edges, ae_time = apply_autoencoder(img_array_edges, dimensions=inc)
         print(f"AE Conversion Time: {ae_time:.4f} seconds")
+        # Filtering
+        img_array_edges[img_array_edges <= threshold] = 0
     
     fin = ""
     end_time_1 = time.time()
@@ -638,7 +647,11 @@ def convert_edge_cnn(fi,save,binarize=False, inc = 64,factor=2.5, low_thresh=0, 
     if ae:
         img_array_edges, ae_time = apply_autoencoder(img_array_edges, dimensions=inc)
         print(f"AE Conversion Time: {ae_time:.4f} seconds")
+        # Filtering
+        img_array_edges[img_array_edges <= threshold] = 0
     
+    
+
     print('preprocessing done')
 
     fin = ""
@@ -742,6 +755,7 @@ def convert_edge_resnet(fi,save, binarize=False,inc = 64, factor=2.5, low_thresh
     if ae:
         img_array_edges, ae_time = apply_autoencoder(img_array_edges, dimensions=inc)
         print(f"AE Conversion Time: {ae_time:.4f} seconds")
+        img_array_edges[img_array_edges <= threshold] = 0
     
     print('preprocessing done')
 
@@ -845,6 +859,8 @@ def convert_edge_mobile(fi,save, binarize=False, inc = 64, factor=2.5, low_thres
     if ae:
         img_array_edges, ae_time = apply_autoencoder(img_array_edges, dimensions=inc)
         print(f"AE Conversion Time: {ae_time:.4f} seconds")
+        # Filtering
+        img_array_edges[img_array_edges <= threshold] = 0
     
     fin = ""
     end_time_1 = time.time()
