@@ -349,13 +349,13 @@ def convert_edge_euclid(fi,save, inc=10, binarize=False, factor=2.5, low_thresh=
     print(f"Image Processing Time: {image_processing_time:.4f} seconds")
     print(f"Model Conversion Time: {model_conversion_time:.4f} seconds")
 
-def convert_edge_classical(fi,save, algo, binarize=False, inc = 64,  factor=2.5, low_thresh=0, high_thresh=50, accelerated=True, hog_enable=True, ae = False,ded=False):
+def convert_edge_classical(fi,save, algo, binarize=False, inc = 64,  factor=2.5, low_thresh=0, high_thresh=50, accelerated=True, disable_hog=False, ae = False,ded=False):
     start_time = time.time()
     ae_time = 0
     factor = factor * inc / 10
     loaded_clf = None
     # 0: Import SVM Model
-    if hog_enable:
+    if not disable_hog:
         if algo == 'rforest':
             loaded_clf = joblib.load(f'artifacts/random_forest_model_hog_{inc}_x_{inc}.pkl')
         elif algo == 'svm':
@@ -447,7 +447,7 @@ def convert_edge_classical(fi,save, algo, binarize=False, inc = 64,  factor=2.5,
             subs = np.array(subs)
            
         
-            if hog_enable:
+            if not disable_hog:
                 subs_hog = extract_hog_features(subs[0])[0]
                 tiles.append(subs_hog)
             else: 
@@ -957,7 +957,7 @@ if __name__ == "__main__":
         elif((vars(args)['algorithm']=='edgev3') or (vars(args)['algorithm']=='edgev4')):
             convert_edge_euclid(fi,save, inc=inc, binarize=bin, factor=factor, low_thresh=low_thresh, high_thresh=high_thresh, accelerated=accelerated, ae=ae, ded=ded)
         elif((vars(args)['algorithm']=='knn') or (vars(args)['algorithm']=='svm') or (vars(args)['algorithm']=='rforest')):
-            convert_edge_classical(fi,save, algo=(vars(args)['algorithm']),binarize=bin, inc= inc, factor=factor, low_thresh=low_thresh, high_thresh=high_thresh, accelerated=accelerated, ae=ae, ded=ded)
+            convert_edge_classical(fi,save, algo=(vars(args)['algorithm']),binarize=bin, inc= inc, factor=factor, low_thresh=low_thresh, high_thresh=high_thresh, accelerated=accelerated, ae=ae, ded=ded, disable_hog=disable_hog)
         elif(vars(args)['algorithm']=='nn'):
             convert_edge_nn(fi,save, bin, inc= inc ,factor=factor, low_thresh=low_thresh, high_thresh=high_thresh, accelerated=accelerated, ae=ae,ded=ded)
         elif(vars(args)['algorithm']=='cnn'):

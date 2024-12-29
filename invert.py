@@ -2,7 +2,7 @@ import os
 from PIL import Image, ImageOps
 
 # Define the directory containing PNG images
-directory = "examples/oscii_ex_building"
+directory = "examples/oscii_ex_catgirl"
 
 # Iterate over all files in the directory
 for filename in os.listdir(directory):
