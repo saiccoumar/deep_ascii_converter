@@ -355,7 +355,8 @@ def convert_edge_classical(fi,save, algo, binarize=False, inc = 64,  factor=2.5,
     factor = factor * inc / 10
     loaded_clf = None
     # 0: Import SVM Model
-    if not disable_hog:
+    if disable_hog:
+        # print("loaded hog")
         if algo == 'rforest':
             loaded_clf = joblib.load(f'artifacts/random_forest_model_hog_{inc}_x_{inc}.pkl')
         elif algo == 'svm':
@@ -447,7 +448,7 @@ def convert_edge_classical(fi,save, algo, binarize=False, inc = 64,  factor=2.5,
             subs = np.array(subs)
            
         
-            if not disable_hog:
+            if disable_hog:
                 subs_hog = extract_hog_features(subs[0])[0]
                 tiles.append(subs_hog)
             else: 
