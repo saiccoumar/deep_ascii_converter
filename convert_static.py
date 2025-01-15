@@ -413,7 +413,7 @@ def convert_edge_classical(fi,save, algo, binarize=False, inc = 64,  factor=2.5,
     final = pil_img
     final = pil_img.resize((width,height))
 
-    pil_img.show()
+    # pil_img.show()
     # 3: Convert to 0s and 1s for bnw
     img_array_edges = np.array(final).astype(float) 
     max_value = np.max(img_array_edges)  # Get the maximum value

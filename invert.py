@@ -1,9 +1,9 @@
 import os
 from PIL import Image, ImageOps
 
-# for i in range(11,21):
+# for i in range(1,21):
 #     # Define the directory containing PNG images
-#     directory = f"examples/{i}"
+#     directory = f"examples/uncropped_images/{i}"
 #     inverted_dir = os.path.join(directory, "inverted")
 
 #     # Create the 'inverted' directory if it doesn't exist
@@ -26,8 +26,10 @@ from PIL import Image, ImageOps
 
 
 
-# Define the directory containing PNG images
-directory = f"examples/shapes_ex"
+
+
+# # Define the directory containing PNG images
+directory = f"examples/cropped_images/2_scaled"
 inverted_dir = os.path.join(directory, "inverted")
 
 # Create the 'inverted' directory if it doesn't exist

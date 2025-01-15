@@ -8,3 +8,5 @@ Evaluation Results.docx
 create_figures.ipynb
 resources.txt
 *.csv
+*.caffemodel
+*.prototxt

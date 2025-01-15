@@ -43,8 +43,5 @@
                                                                                                                                                                                
                                                                                                                                                                                
                                                                                                                                                                                
-Elapsed Conversion Time: 5.0631 seconds
-Image Processing Time: 0.0080 seconds
-Model Conversion Time: 5.0551 seconds
                                                                                                                                                                                
                                                                                                                                                                                
