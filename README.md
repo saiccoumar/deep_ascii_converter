@@ -17,6 +17,8 @@ Sections: <br />
 [Conclusion](#conclusion)<br />
 # Introduction
 Welcome to my Deep ASCII Image Converter! This was a ~~quick littl~~ big project I made following my last iteration to utilize machine learning and deep learning for structure-based ASCII art synthesis. I'll cover the installation and usage, as well as a high level overview of some of the algorithms available.
+
+
 # Usage
 First make sure all the dependencies are met.
 ```bash
@@ -47,7 +49,7 @@ Video conversion is a legacy feature but is still functional. See instructions i
 
 ⚠️ UNDER CONSTRUCTION ⚠️
 
-# Citations and Resources:
+# Resources:
 Below are resources that I consulted during this project <br />
 1. [Stefan Pitur's Edge detection](https://github.com/StefanPitur/Edge-detection---Canny-detector/blob/master/canny.py)
 2. [JavE image2ascii](http://www.jave.de/image2ascii/algorithms.html)
@@ -59,3 +61,17 @@ Below are resources that I consulted during this project <br />
 
 ⚠️ UNDER CONSTRUCTION ⚠️
 
+
+# Citation:
+If you'd like to cite this work please use
+```
+@misc{coumar2025evaluatingmachinelearningapproaches,
+      title={Evaluating Machine Learning Approaches for ASCII Art Generation}, 
+      author={Sai Coumar and Zachary Kingston},
+      year={2025},
+      eprint={2503.14375},
+      archivePrefix={arXiv},
+      primaryClass={cs.GR},
+      url={https://arxiv.org/abs/2503.14375}, 
+}
+```
