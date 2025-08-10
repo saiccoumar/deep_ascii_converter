@@ -12,11 +12,9 @@ Sections: <br />
 [Introduction](#introduction)<br />
 [Usage](#usage)<br />
 [The Algorithms Behind ASCII Conversion](#the-algorithms-behind-ascii-conversion)<br />
-[Potential Improvements](#potential-improvements)<br />
-[Citations](#citations-and-resources)<br />
-[Conclusion](#conclusion)<br />
+
 # Introduction
-Welcome to my Deep ASCII Image Converter! This was a ~~quick littl~~ big project I made following my last iteration to utilize machine learning and deep learning for structure-based ASCII art synthesis. I'll cover the installation and usage, as well as a high level overview of some of the algorithms available.
+Welcome to my Deep ASCII Image Converter! This was a ~~quick littl~~ big project I made following my last iteration to utilize machine learning and deep learning for structure-based ASCII art synthesis. I'll cover the installation and usage. To read more about the algorithms, please read my paper here: [Evaluating Machine Learning Approaches for ASCII Art Generation](https://arxiv.org/abs/2503.14375v1).
 
 
 # Usage
@@ -40,27 +38,13 @@ ex.
 python convert_static.py --filename [INPUT FILENAME] --algorithm [ALGORITHM] --factor [size] -c --save [OUTPUT FILENAME] -cf [CONVOLUTIONAL FILTER]
 ```
 
-⚠️ UNDER CONSTRUCTION ⚠️
-
 ## Video Conversion
 Video conversion is a legacy feature but is still functional. See instructions in the previous iteration's repository.
 
-# The Algorithms Behind ASCII Conversion
+# The Algorithms Behind Deep ASCII Conversion
+Fundamentally, all of these ASCII methods work very similarly. They take an input image, extract the edges, divide the image into nxn "tiles", and then use some advanced character matching method to correspond that tile to the closest text character that matches. It then assembles the output as a string and returns it to the terminal. In general, it appears that classical machine learning algorithms, such as random forest and SVM, tend to perform much better than deep neural networks. This is likely attributed to a loss of data as information propogates through deep neural networks in a domain that uses low dimensionality input. 
 
-⚠️ UNDER CONSTRUCTION ⚠️
-
-# Resources:
-Below are resources that I consulted during this project <br />
-1. [Stefan Pitur's Edge detection](https://github.com/StefanPitur/Edge-detection---Canny-detector/blob/master/canny.py)
-2. [JavE image2ascii](http://www.jave.de/image2ascii/algorithms.html)
-3. [ANSI Codes Wiki](https://en.wikipedia.org/wiki/ANSI_escape_code)
-
-# Conclusion:
-
-
-
-⚠️ UNDER CONSTRUCTION ⚠️
-
+<img width="1205" height="394" alt="image" src="https://github.com/user-attachments/assets/1f95692f-73ae-4dca-a24b-fe4f15454a55" />
 
 # Citation:
 If you'd like to cite this work please use
@@ -75,3 +59,15 @@ If you'd like to cite this work please use
       url={https://arxiv.org/abs/2503.14375}, 
 }
 ```
+
+Gallery:
+<img width="548" height="704" alt="inverted_rforest_no_hog" src="https://github.com/user-attachments/assets/761d1398-6c3e-4f57-9a0b-8c7940601e66" />
+<img width="1078" height="1016" alt="inverted_rforest_no_hog" src="https://github.com/user-attachments/assets/fcbbd40c-c4d0-47af-99fb-492f9c4f7e58" />
+<img width="1360" height="583" alt="inverted_rforest" src="https://github.com/user-attachments/assets/b311875f-b275-4c0a-b4d1-49a8015667a2" />
+<img width="999" height="648" alt="inverted_rforest_no_hog" src="https://github.com/user-attachments/assets/490cc04f-0996-48ab-b2ab-83049a3df782" />
+<img width="661" height="772" alt="inverted_rforest" src="https://github.com/user-attachments/assets/f43e2d2f-4232-44d0-82c1-51305eb9b19f" />
+<img width="1046" height="586" alt="inverted_rforest_no_hog" src="https://github.com/user-attachments/assets/3b17bf72-85b9-4900-93eb-2347c60c097f" />
+<img width="1095" height="503" alt="inverted_rforest_no_hog" src="https://github.com/user-attachments/assets/d84ef10a-f26c-4e05-aa31-42bceeb96387" />
+
+
+
